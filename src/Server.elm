@@ -11,7 +11,7 @@ import Bridge
 
 ---- MODEL ----
 
-port respond : Encode.Value -> Cmd msg
+port send : (String, String) -> Cmd msg
 port receive : ((FrontendId, String) -> msg) -> Sub msg
 port connect : (FrontendId -> msg) -> Sub msg
 
@@ -52,7 +52,13 @@ update msg model =
         Connected clientId ->
             (Dict.insert clientId [] frontends, Cmd.none)
         RequestReceived clientId msgFromFrontend ->
-            (Dict.update clientId (record msgFromFrontend) frontends, Cmd.none)
+            let
+                model_ = Dict.update clientId (record msgFromFrontend) frontends
+                encodedMsg = Encode.encode 0 (Bridge.encodeMsgToFrontend "Hello back")
+                cmd_ = send (clientId, encodedMsg)
+            in
+            (model_, cmd_)
+
         NoOp -> ( model, Cmd.none )
 
 record msg msgs =

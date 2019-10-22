@@ -2871,6 +2871,10 @@ var $author$project$Server$subs = function (model) {
 				$author$project$Server$receive($author$project$Server$parseReceive)
 			]));
 };
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Bridge$encodeMsgToFrontend = function (a) {
+	return $elm$json$Json$Encode$string(a);
+};
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -2992,6 +2996,32 @@ var $author$project$Server$record = F2(
 			return $elm$core$Maybe$Just(
 				A2($elm$core$List$cons, msg, msgs_));
 		}
+	});
+var $elm$core$Basics$identity = function (x) {
+	return x;
+};
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var $author$project$Server$send = _Platform_outgoingPort(
+	'send',
+	function ($) {
+		var a = $.a;
+		var b = $.b;
+		return A2(
+			$elm$json$Json$Encode$list,
+			$elm$core$Basics$identity,
+			_List_fromArray(
+				[
+					$elm$json$Json$Encode$string(a),
+					$elm$json$Json$Encode$string(b)
+				]));
 	});
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -3413,13 +3443,18 @@ var $author$project$Server$update = F2(
 			case 'RequestReceived':
 				var clientId = msg.a;
 				var msgFromFrontend = msg.b;
-				return _Utils_Tuple2(
-					A3(
-						$elm$core$Dict$update,
-						clientId,
-						$author$project$Server$record(msgFromFrontend),
-						frontends),
-					$elm$core$Platform$Cmd$none);
+				var model_ = A3(
+					$elm$core$Dict$update,
+					clientId,
+					$author$project$Server$record(msgFromFrontend),
+					frontends);
+				var encodedMsg = A2(
+					$elm$json$Json$Encode$encode,
+					0,
+					$author$project$Bridge$encodeMsgToFrontend('Hello back'));
+				var cmd_ = $author$project$Server$send(
+					_Utils_Tuple2(clientId, encodedMsg));
+				return _Utils_Tuple2(model_, cmd_);
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
